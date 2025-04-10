@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <h1>Inscription</h1>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div id="form-errors" class="error" style="display: none;"></div>
+    
+    <form id="register-form" method="post">
+        {% csrf_token %}
+        <div class="form-group" id="pseudonym-group">
+            <label for="pseudonym">Pseudonyme (au moins 5 caractères, sans chiffres)</label>
+            <input type="text" id="pseudonym" name="pseudonym" required>
+            <div class="field-error" id="pseudonym-error" style="display: none;"></div>
+        </div>
+        
+        <div class="form-group" id="email-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            <div class="field-error" id="email-error" style="display: none;"></div>
+        </div>
+        
+        <div class="form-group" id="password-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" required>
+            <div class="field-error" id="password-error" style="display: none;"></div>
+        </div>
+        
+        <div class="form-group" id="confirm_password-group">
+            <label for="confirm_password">Confirmer le mot de passe</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+            <div class="field-error" id="confirm_password-error" style="display: none;"></div>
+        </div>
+        
+        <button type="submit">S'inscrire</button>
+    </form>
+    
+    <div class="link-container">
+        <p>Déjà inscrit ? <a href="{% url 'login' %}">Se connecter</a></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('register-form');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Réinitialiser les erreurs
+                resetErrors();
+                
+                // Récupérer les données du formulaire
+                const formData = new FormData(form);
+                
+                // Envoyer la requête AJAX
+                fetch('{% url "register" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirection en cas de succès
+                        window.location.href = data.redirect;
+                    } else {
+                        // Afficher les erreurs
+                        displayErrors(data.errors);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    document.getElementById('form-errors').textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                    document.getElementById('form-errors').style.display = 'block';
+                });
+            });
+            
+            function resetErrors() {
+                // Masquer toutes les erreurs
+                const errorElements = document.querySelectorAll('.field-error');
+                errorElements.forEach(el => {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                });
+                
+                // Supprimer les classes d'erreur
+                const formGroups = document.querySelectorAll('.form-group');
+                formGroups.forEach(group => {
+                    group.classList.remove('has-error');
+                });
+                
+                // Masquer l'erreur générale
+                document.getElementById('form-errors').style.display = 'none';
+            }
+            
+            function displayErrors(errors) {
+                for (const field in errors) {
+                    const errorElement = document.getElementById(`${field}-error`);
+                    const formGroup = document.getElementById(`${field}-group`);
+                    
+                    if (errorElement) {
+                        errorElement.textContent = errors[field];
+                        errorElement.style.display = 'block';
+                        formGroup.classList.add('has-error');
+                    } else {
+                        // Si le champ n'existe pas, afficher l'erreur générale
+                        document.getElementById('form-errors').textContent = errors[field];
+                        document.getElementById('form-errors').style.display = 'block';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

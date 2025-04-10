@@ -1,0 +1,26 @@
+/* Styles spécifiques à la page d'accueil */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.welcome {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.nav-button {
+    background-color: transparent;
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.nav-button:hover {
+    background-color: #f5f5f5;
+} 
