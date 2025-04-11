@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="jumbotron text-center">
+        <h1 class="display-4">Bienvenue sur GameForge</h1>
+        <p class="lead">Créez et générez des idées de jeux vidéo uniques grâce à l'intelligence artificielle</p>
+        <hr class="my-4">
+        <p>Commencez à créer votre prochain chef-d'œuvre dès maintenant !</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'generate_game_idea' %}" role="button">Générer une nouvelle idée</a>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mes idées de jeux</h5>
+                    <p class="card-text">Consultez et gérez vos idées de jeux précédemment générées.</p>
+                    <a href="{% url 'list_game_ideas' %}" class="btn btn-outline-primary">Voir mes idées</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Nouvelle génération</h5>
+                    <p class="card-text">Laissez l'IA vous inspirer pour créer un nouveau concept de jeu unique.</p>
+                    <a href="{% url 'generate_game_idea' %}" class="btn btn-outline-primary">Créer une nouvelle idée</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-5">
+        <h2 class="mb-4">Découvrir des idées de jeux</h2>
+        <p>Explorez des concepts de jeux générés par d'autres utilisateurs pour trouver de l'inspiration.</p>
+        
+        <div class="mb-4">
+            <form action="{% url 'search_game_ideas' %}" method="GET" class="d-flex">
+                <input class="form-control me-2" type="search" name="q" placeholder="Rechercher des jeux par titre, genre, style..." aria-label="Rechercher" style="min-width: 300px;">
+                <button class="btn btn-primary" type="submit">Rechercher</button>
+            </form>
+        </div>
+        
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <p class="me-2 mb-0">Catégories populaires :</p>
+            <a href="{% url 'search_game_ideas' %}?q=RPG" class="badge bg-primary text-decoration-none">RPG</a>
+            <a href="{% url 'search_game_ideas' %}?q=Aventure" class="badge bg-primary text-decoration-none">Aventure</a>
+            <a href="{% url 'search_game_ideas' %}?q=FPS" class="badge bg-primary text-decoration-none">FPS</a>
+            <a href="{% url 'search_game_ideas' %}?q=Stratégie" class="badge bg-primary text-decoration-none">Stratégie</a>
+            <a href="{% url 'search_game_ideas' %}?q=Pixel%20Art" class="badge bg-secondary text-decoration-none">Pixel Art</a>
+            <a href="{% url 'search_game_ideas' %}?q=3D" class="badge bg-secondary text-decoration-none">3D</a>
+            <a href="{% url 'search_game_ideas' %}?q=Fantasy" class="badge bg-info text-decoration-none">Fantasy</a>
+            <a href="{% url 'search_game_ideas' %}?q=Science-fiction" class="badge bg-info text-decoration-none">Science-fiction</a>
+        </div>
+        
+        <a href="{% url 'search_game_ideas' %}" class="btn btn-outline-primary">Explorer toutes les idées</a>
+    </div>
+</div>
+{% endblock %} 

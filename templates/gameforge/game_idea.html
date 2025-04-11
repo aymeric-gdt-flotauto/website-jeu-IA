@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">{{ game_idea.title }}</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Informations de base</h2>
+                </div>
+                <div class="card-body">
+                    <p><strong>Genre:</strong> {{ game_idea.genre }}</p>
+                    <p><strong>Style graphique:</strong> {{ game_idea.style_graphique }}</p>
+                    <p><strong>Ambiance visuelle:</strong> {{ game_idea.ambiance_visuelle }}</p>
+                    <p><strong>Ambiance narrative:</strong> {{ game_idea.ambiance_narrative }}</p>
+                    <p><strong>Mots-clés:</strong> {{ game_idea.mots_cles }}</p>
+                    <p><strong>Références culturelles:</strong> {{ game_idea.reference_culturelle }}</p>
+                    <p><strong>Description:</strong> {{ game_idea.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Illustration conceptuelle</h2>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ formatted_data.illustration }}" alt="Illustration conceptuelle" class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Univers du jeu</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if formatted_data.univers.type %}
+                        <div class="col-md-6">
+                            <p><strong>Type:</strong> {{ formatted_data.univers.type }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if formatted_data.univers.ambiance %}
+                        <div class="col-md-6">
+                            <p><strong>Ambiance:</strong> {{ formatted_data.univers.ambiance }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if formatted_data.univers.style_graphique %}
+                        <div class="col-md-6">
+                            <p><strong>Style graphique:</strong> {{ formatted_data.univers.style_graphique }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if formatted_data.univers.thème %}
+                        <div class="col-md-6">
+                            <p><strong>Thème:</strong> {{ formatted_data.univers.thème }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if formatted_data.univers.inspiration %}
+                        <div class="col-md-6">
+                            <p><strong>Inspiration:</strong> {{ formatted_data.univers.inspiration }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if formatted_data.univers.mots_cles %}
+                    <div class="mt-3">
+                        <p><strong>Mots-clés:</strong></p>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for mot in formatted_data.univers.mots_cles %}
+                            <span class="badge bg-primary">{{ mot }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Histoire principale</h2>
+                </div>
+                <div class="card-body">
+                    {% if formatted_data.histoire.titre %}
+                    <h3 class="h6 mb-3">{{ formatted_data.histoire.titre }}</h3>
+                    {% endif %}
+                    
+                    {% if formatted_data.histoire.scenario %}
+                    <div class="accordion" id="scenarioAccordion">
+                        {% for chapitre in formatted_data.histoire.scenario %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" 
+                                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
+                                        aria-controls="collapse{{ forloop.counter }}">
+                                    {% if chapitre.chapitre %}Chapitre {{ chapitre.chapitre }}{% else %}Partie {{ forloop.counter }}{% endif %}
+                                    {% if chapitre.titre %}: {{ chapitre.titre }}{% endif %}
+                                </button>
+                            </h2>
+                            <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                                 aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#scenarioAccordion">
+                                <div class="accordion-body">
+                                    {{ chapitre.description|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Personnages</h2>
+                </div>
+                <div class="card-body">
+                    {% if formatted_data.personnages %}
+                    <div class="row">
+                        {% for personnage in formatted_data.personnages %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h3 class="h6 mb-0">{{ personnage.nom }}</h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if personnage.role %}
+                                    <p><strong>Rôle:</strong> {{ personnage.role }}</p>
+                                    {% endif %}
+                                    
+                                    {% if personnage.motivations %}
+                                    <p><strong>Motivations:</strong> {{ personnage.motivations }}</p>
+                                    {% endif %}
+                                    
+                                    {% if personnage.capacites %}
+                                    <p><strong>Capacités:</strong></p>
+                                    <ul>
+                                        {% for capacite in personnage.capacites %}
+                                        <li>{{ capacite }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>Aucun personnage n'a été défini pour ce jeu.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Pitch Deck</h2>
+                </div>
+                <div class="card-body">
+                    {{ formatted_data.pitch_deck|linebreaks }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -3,6 +3,11 @@ from .models import User, Profile
 from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
+from .decorators import login_required
+import re
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
 
 # Create your views here.
 
@@ -13,10 +18,10 @@ def register(request):
         is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         # Le formulaire demande pseudonym, email et mot de passe.
-        pseudonym = request.POST.get('pseudonym')   
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
+        pseudonym = request.POST.get('pseudonym', '')
+        email = request.POST.get('email', '')
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
         
         # Dictionnaire pour stocker les erreurs
         errors = {}
@@ -26,11 +31,13 @@ def register(request):
             errors['confirm_password'] = 'Les mots de passe ne correspondent pas.'
         
         # On vérifie que le pseudonyme est valide.
-        if not User.is_valid_pseudonym(pseudonym):
-            errors['pseudonym'] = 'Le pseudonyme est invalide (minimum 5 caractères, aucun chiffre).'
+        if len(pseudonym) < 5:
+            errors['pseudonym'] = 'Le pseudonyme doit contenir au moins 5 caractères.'
+        elif not re.match('^[a-zA-Z]+$', pseudonym):
+            errors['pseudonym'] = 'Le pseudonyme ne doit contenir que des lettres (sans chiffres).'
         
         # On vérifie que l'email est valide.
-        if not User.is_valid_email(email):
+        if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
             errors['email'] = 'L\'email est invalide.'
         
         # Vérifier si le pseudonyme ou l'email existe déjà
@@ -59,18 +66,18 @@ def register(request):
         profile.save()
         
         if is_ajax:
-            return JsonResponse({'success': True, 'message': 'Votre compte a été créé avec succès.', 'redirect': '/login/'})
+            return JsonResponse({'success': True, 'message': 'Votre compte a été créé avec succès.', 'redirect': '/'})
         else:
             messages.success(request, 'Votre compte a été créé avec succès.')
-            return redirect('login')
+            return redirect('/')
     
     # Si le formulaire n'est pas soumis, on affiche le formulaire.
     return render(request, 'registration/register.html')
 
 def login_view(request):
     if request.method == 'POST':
-        pseudonym = request.POST.get('pseudonym')
-        password = request.POST.get('password')
+        pseudonym = request.POST.get('pseudonym', '')
+        password = request.POST.get('password', '')
         
         # Vérifier si l'utilisateur existe
         try:
@@ -92,9 +99,9 @@ def login_view(request):
                 
                 # Rediriger vers le changement de mot de passe si nécessaire
                 if hasattr(user, 'profile') and user.profile.must_change_password:
-                    return redirect('change_password')
+                    return redirect('/auth/change-password/')
                 else:
-                    return redirect('home')
+                    return redirect('/')
             else:
                 # Mot de passe incorrect, incrémenter les tentatives de connexion
                 user.increment_login_attempts()
@@ -115,15 +122,9 @@ def login_view(request):
     
     return render(request, 'registration/login.html')
 
+@login_required
 def change_password(request):
-    # Vérifier si l'utilisateur est connecté
-    if 'user_id' not in request.session:
-        return redirect('login')
-        
-    try:
-        user = User.objects.get(id=request.session['user_id'])
-    except User.DoesNotExist:
-        return redirect('login')
+    user = User.objects.get(id=request.session['user_id'])
     
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -142,19 +143,13 @@ def change_password(request):
         
         user.save()
         messages.success(request, 'Mot de passe modifié avec succès.')
-        return redirect('my_profile')
+        return redirect('/auth/profile/')
         
     return render(request, 'registration/change_password.html')
 
+@login_required
 def my_profile(request):
-    # Vérifier si l'utilisateur est connecté
-    if 'user_id' not in request.session:
-        return redirect('login')
-        
-    try:
-        user = User.objects.get(id=request.session['user_id'])
-    except User.DoesNotExist:
-        return redirect('login')
+    user = User.objects.get(id=request.session['user_id'])
     
     # Récupérer ou créer le profil si nécessaire
     profile, created = Profile.objects.get_or_create(user=user)
@@ -164,19 +159,30 @@ def my_profile(request):
         # Récupérer la photo uploadée
         profile_picture = request.FILES.get('profile_picture')
         
+        # Vérifier la taille du fichier (max 5 Mo)
+        if profile_picture.size > 5 * 1024 * 1024:
+            messages.error(request, 'Le fichier est trop volumineux. Taille maximale : 5 Mo.')
+            return redirect('/auth/profile/')
+        
         # Vérifier le type de fichier
         allowed_types = ['image/jpeg', 'image/png', 'image/gif']
         if profile_picture.content_type not in allowed_types:
-            messages.error(request, 'Format de fichier non supporté. Utilisez JPG, PNG ou GIF.')
-        elif profile_picture.size > 5 * 1024 * 1024:  # 5 Mo max
-            messages.error(request, 'La taille du fichier ne doit pas dépasser 5 Mo.')
-        else:
-            # Sauvegarder la photo
-            profile.profile_picture = profile_picture
-            profile.save()
-            messages.success(request, 'Photo de profil mise à jour avec succès.')
+            messages.error(request, 'Format de fichier non supporté. Formats acceptés : JPG, PNG, GIF.')
+            return redirect('/auth/change-password/')
         
-        return redirect('my_profile')
+        # Supprimer l'ancienne image si elle existe
+        if user.profile_picture:
+            if os.path.isfile(user.profile_picture.path):
+                os.remove(user.profile_picture.path)
+        
+        # Enregistrer la nouvelle image
+        filename = f'profile_pictures/{user.id}_{profile_picture.name}'
+        user.profile_picture = filename
+        path = default_storage.save(filename, ContentFile(profile_picture.read()))
+        user.save()
+        
+        messages.success(request, 'Photo de profil mise à jour avec succès.')
+        return redirect('/auth/profile/')
         
     profile_picture = profile.profile_picture if profile else None
         
@@ -189,16 +195,16 @@ def my_profile(request):
 def logout(request):
     if 'user_id' in request.session:
         del request.session['user_id']
-    return redirect('login')
+    return redirect('/auth/login/')
 
 def home(request):
     # Vérifier si l'utilisateur est connecté
     if 'user_id' not in request.session:
-        return redirect('login')
+        return redirect('/auth/login/')
         
     try:
         user = User.objects.get(id=request.session['user_id'])
     except User.DoesNotExist:
-        return redirect('login')
+        return redirect('/auth/login/')
         
     return render(request, 'home.html', {'user': user})

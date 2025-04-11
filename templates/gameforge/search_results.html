@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="mb-4">
+        <h1>Résultats de recherche</h1>
+        {% if query %}
+            <p>Votre recherche: <strong>"{{ query }}"</strong> ({{ count }} résultat{{ count|pluralize }})</p>
+        {% else %}
+            <p>Veuillez saisir un terme de recherche dans la barre de navigation.</p>
+        {% endif %}
+    </div>
+
+    {% if results %}
+        <div class="row">
+            {% for result in results %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ result.idea.title }}</h5>
+                            <small class="text-muted">par {{ result.idea.user.pseudonym }}</small>
+                        </div>
+                        {% if result.formatted_data.illustration %}
+                            <div class="position-relative">
+                                <img src="{{ result.formatted_data.illustration }}" class="card-img-top img-fluid" alt="Illustration de {{ result.idea.title }}" style="height: 180px; object-fit: cover;">
+                                <div class="position-absolute bottom-0 start-0 w-100 p-2" style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                                    <span class="badge bg-primary">{{ result.idea.genre }}</span>
+                                    <span class="badge bg-secondary">{{ result.idea.style_graphique }}</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <p class="card-text">{{ result.idea.description|truncatewords:30 }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'game_idea' game_idea_id=result.idea.id %}" class="btn btn-primary btn-sm">Voir les détails</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif query %}
+        <div class="alert alert-info">
+            Aucun résultat trouvé pour cette recherche. Essayez avec d'autres termes.
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <h3>Découvrir d'autres idées</h3>
+        <p>Vous pouvez rechercher des idées de jeux par titre, genre, style graphique ou ambiance.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'search_game_ideas' %}?q=RPG" class="btn btn-outline-primary">RPG</a>
+            <a href="{% url 'search_game_ideas' %}?q=FPS" class="btn btn-outline-primary">FPS</a>
+            <a href="{% url 'search_game_ideas' %}?q=Aventure" class="btn btn-outline-primary">Aventure</a>
+            <a href="{% url 'search_game_ideas' %}?q=Stratégie" class="btn btn-outline-primary">Stratégie</a>
+            <a href="{% url 'search_game_ideas' %}?q=Pixel" class="btn btn-outline-primary">Pixel Art</a>
+            <a href="{% url 'search_game_ideas' %}?q=3D" class="btn btn-outline-primary">3D</a>
+            <a href="{% url 'search_game_ideas' %}?q=Fantasy" class="btn btn-outline-primary">Fantasy</a>
+            <a href="{% url 'search_game_ideas' %}?q=Science-fiction" class="btn btn-outline-primary">Science-fiction</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

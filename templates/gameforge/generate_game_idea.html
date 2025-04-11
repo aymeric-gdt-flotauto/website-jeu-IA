@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Générer une nouvelle idée de jeu</h1>
+    
+    <!-- Overlay de chargement -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner-container">
+                <div class="spinner-border-lg" role="status"></div>
+                <div class="cube-loader">
+                    <div class="cube-face cube-face-front"></div>
+                    <div class="cube-face cube-face-back"></div>
+                    <div class="cube-face cube-face-right"></div>
+                    <div class="cube-face cube-face-left"></div>
+                    <div class="cube-face cube-face-top"></div>
+                    <div class="cube-face cube-face-bottom"></div>
+                </div>
+            </div>
+            <h3 class="mt-4 loading-text">Génération en cours...</h3>
+            <p class="loading-subtext">Cela peut prendre jusqu'à une minute. Veuillez patienter pendant que notre IA crée votre univers de jeu.</p>
+        </div>
+    </div>
+    
+    <form id="generation-form" method="POST" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="title" class="form-label">Titre du jeu</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="genre" class="form-label">Genre</label>
+            <input type="text" class="form-control" id="genre" name="genre" placeholder="RPG, FPS, MOBA, Visual Novel, etc." required>
+        </div>
+
+        <div class="mb-3">
+            <label for="style_graphique" class="form-label">Style graphique</label>
+            <input type="text" class="form-control" id="style_graphique" name="style_graphique" placeholder="2D, 3D, pixel art, etc." required>
+        </div>
+
+        <div class="mb-3">
+            <label for="ambiance_visuelle" class="form-label">Ambiance visuelle</label>
+            <input type="text" class="form-control" id="ambiance_visuelle" name="ambiance_visuelle" placeholder="Fantasy, Science-fiction, etc." required>
+        </div>
+
+        <div class="mb-3">
+            <label for="ambiance_narrative" class="form-label">Ambiance narrative</label>
+            <input type="text" class="form-control" id="ambiance_narrative" name="ambiance_narrative" placeholder="Tragique, comique, etc." required>
+        </div>
+
+        <div class="mb-3">
+            <label for="mots_cles" class="form-label">Mots-clés</label>
+            <input type="text" class="form-control" id="mots_cles" name="mots_cles" placeholder="Guerre, Amour, Trahison, etc." required>
+        </div>
+
+        <div class="mb-3">
+            <label for="reference_culturelle" class="form-label">Références culturelles</label>
+            <input type="text" class="form-control" id="reference_culturelle" name="reference_culturelle" placeholder="Zelda, Final Fantasy, Dark Souls, etc." required>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Générer</button>
+    </form>
+</div>
+
+<style>
+    /* Style pour l'overlay de chargement */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(5px);
+    }
+    
+    .loading-content {
+        text-align: center;
+        color: white;
+        max-width: 600px;
+        padding: 30px;
+        border-radius: 15px;
+        background-color: rgba(108, 92, 231, 0.2);
+        box-shadow: 0 0 20px rgba(108, 92, 231, 0.6);
+    }
+
+    .loading-text {
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 24px;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(108, 92, 231, 0.8);
+    }
+    
+    .loading-subtext {
+        margin-top: 10px;
+        opacity: 0.8;
+    }
+
+    /* Animation cube loader */
+    .spinner-container {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    
+    .cube-loader {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        position: relative;
+        transform-style: preserve-3d;
+        animation: spin 2s infinite linear;
+    }
+
+    .cube-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        opacity: 0.8;
+        box-shadow: 0 0 15px rgba(108, 92, 231, 0.8);
+    }
+
+    .cube-face-front  { transform: translateZ(30px); }
+    .cube-face-back   { transform: rotateY(180deg) translateZ(30px); }
+    .cube-face-right  { transform: rotateY(90deg) translateZ(30px); }
+    .cube-face-left   { transform: rotateY(-90deg) translateZ(30px); }
+    .cube-face-top    { transform: rotateX(90deg) translateZ(30px); }
+    .cube-face-bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+    @keyframes spin {
+        0% { transform: rotate3d(1, 1, 1, 0deg); }
+        100% { transform: rotate3d(1, 1, 1, 360deg); }
+    }
+    
+    /* Effet de pulsation sur le texte */
+    .loading-text {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 0.8; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.05); }
+        100% { opacity: 0.8; transform: scale(1); }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('generation-form');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        form.addEventListener('submit', function(e) {
+            // Vérification de la validité du formulaire HTML5
+            if (form.checkValidity()) {
+                loadingOverlay.style.display = 'flex';
+                
+                // Animation d'entrée 
+                loadingOverlay.style.opacity = 0;
+                setTimeout(() => {
+                    loadingOverlay.style.transition = 'opacity 0.5s';
+                    loadingOverlay.style.opacity = 1;
+                }, 10);
+                
+                // Ne pas bloquer la soumission du formulaire
+                return true;
+            } else {
+                e.preventDefault();
+                e.stopPropagation();
+                form.classList.add('was-validated');
+            }
+        });
+    });
+</script>
+{% endblock %} 

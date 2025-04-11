@@ -2,7 +2,6 @@ from django.urls import path
 from . import views as secureauth_views
 
 urlpatterns = [
-    path("", secureauth_views.home, name="home"),
     path("register/", secureauth_views.register, name="register"),
     path("login/", secureauth_views.login_view, name="login"),
     path("logout/", secureauth_views.logout, name="logout"),

@@ -50,7 +50,7 @@
     </form>
     
     <div class="link-container">
-        <p>Déjà inscrit ? <a href="{% url 'login' %}">Se connecter</a></p>
+        <p>Déjà inscrit ? <a href="/auth/login/">Se connecter</a></p>
     </div>
 
     <script>
@@ -67,7 +67,7 @@
                 const formData = new FormData(form);
                 
                 // Envoyer la requête AJAX
-                fetch('{% url "register" %}', {
+                fetch('/auth/register/', {
                     method: 'POST',
                     body: formData,
                     headers: {

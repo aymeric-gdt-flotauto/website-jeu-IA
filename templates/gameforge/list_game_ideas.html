@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Mes idées de jeux</h1>
+        <a href="{% url 'generate_game_idea' %}" class="btn btn-primary">Nouvelle idée</a>
+    </div>
+
+    {% if game_ideas %}
+        <div class="row">
+            {% for game_idea in game_ideas %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ game_idea.title }}</h5>
+                            <p class="card-text">
+                                <strong>Genre:</strong> {{ game_idea.genre }}<br>
+                                <strong>Style:</strong> {{ game_idea.style_graphique }}
+                            </p>
+                            <p class="card-text">{{ game_idea.description|truncatewords:30 }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Créé le {{ game_idea.created_at|date:"d/m/Y" }}</small>
+                            <a href="{% url 'game_idea' game_idea_id=game_idea.id %}" class="btn btn-sm btn-outline-primary float-end">Voir les détails</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Vous n'avez pas encore créé d'idées de jeux. 
+            <a href="{% url 'generate_game_idea' %}" class="alert-link">Créez votre première idée</a> !
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 
